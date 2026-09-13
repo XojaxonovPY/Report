@@ -1,0 +1,7 @@
+.venv
+.idea
+.env
+test.db
+migrations/versions/*
+package.py
+sqlite.db
