@@ -42,6 +42,14 @@ class User(Model):
             except DatabaseException as e:
                 logger.error(msg=e)
 
+    @staticmethod
+    async def check_admin(user_id: int):
+        user: User | None = await User.get(user_id=user_id)
+        if user and user.is_admin:
+            return True, user
+        else:
+            return False, user
+
     def __str__(self):
         return self.username or f"User #{self.user_id}"
 

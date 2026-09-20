@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TypeVar, Type, Any, AsyncGenerator
 
-from sqlalchemy import DateTime, Update, Select, Delete, TextClause, Result, Insert
+from sqlalchemy import DateTime, Update, Select, Delete, TextClause, Result, Insert, ColumnElement
 from sqlalchemy import insert, update, select, delete, text
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError, DataError
 from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
@@ -31,7 +31,8 @@ class Manager:
                 cls._handle_db_error(e)
 
     @classmethod
-    async def get_all(cls: Type[T], order_fields: list[str] = None, limit: int = 100, offset: int = 0):
+    async def get_all(cls: Type[T], order_fields: list[ColumnElement[Any]] | None = None, limit: int = 100,
+                      offset: int = 0):
         async with AsyncSessionLocal() as session:
             try:
                 query: Select[Any] = select(cls).limit(limit).offset(offset)
@@ -46,7 +47,7 @@ class Manager:
     @classmethod
     async def stream_all(
             cls: Type[T],
-            order_fields: list[str] = None,
+            order_fields: list[ColumnElement[Any]] | None = None,
             limit: int = 100,
             offset: int = 0
     ) -> AsyncGenerator[T, None]:
@@ -76,7 +77,10 @@ class Manager:
                 cls._handle_db_error(e)
 
     @classmethod
-    async def get_filter(cls: Type[T], *filter_, order_by_fields: list[str] = None, limit: int = 100, offset: int = 0):
+    async def get_filter(
+            cls: Type[T], *filter_, order_by_fields: list[ColumnElement[Any]] | None = None,
+            limit: int = 100, offset: int = 0
+    ):
         async with AsyncSessionLocal() as session:
             try:
                 query: Select[Any] = select(cls).where(*filter_).limit(limit).offset(offset)

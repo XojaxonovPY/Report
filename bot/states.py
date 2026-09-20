@@ -14,8 +14,13 @@ class AcceptState(StatesGroup):
     game_username = State()
     comment = State()
 
+
 class EvidenceState(StatesGroup):
     photo = State()
     video = State()
     audio = State()
     link = State()
+
+
+class RejectState(StatesGroup):
+    reason = State()

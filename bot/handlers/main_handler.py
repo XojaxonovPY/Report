@@ -14,6 +14,12 @@ router = Router()
 
 @router.message(CommandStart())
 async def handle_start(message: Message, state: FSMContext):
+    user: User | None = await User.get(user_id=message.chat.id)
+    if user and user.is_admin:
+        buttons: list[str] = ["📃 Reports", "📊 Statistic", "📃 My Accept Reports"]
+        markup = reply_button_builder(buttons, (2,))
+        await message.answer(text="Hush kelibsiz", reply_markup=markup)
+        return
     await state.set_state(RegisterState.gama_username)
     await message.answer(text="CS2 dagi usernameingizni yozing")
 
