@@ -35,8 +35,8 @@ async def reports_handler(message: Message):
                 f"<b>Status:</b>#{report.status.value}"
             )
             buttons: list[InlineKeyboardButton] = [
-                InlineKeyboardButton(text="Qabul qilish", callback_data=f"accept_{admin.id}_{report.id}"),
-                InlineKeyboardButton(text="Rad Etish", callback_data=f"reject_{admin.id}_{report.id}")
+                InlineKeyboardButton(text="Qabul qilish", callback_data=f"accept_{admin.user_id}_{report.id}"),
+                InlineKeyboardButton(text="Rad Etish", callback_data=f"reject_{admin.user_id}_{report.id}")
             ]
             markup = inline_button_builder(buttons, (2,))
             match report.evidence:
@@ -93,10 +93,10 @@ async def reports_handler(message: Message):
 @router.callback_query(F.data.startswith("accept_"))
 async def accept_button(callback: CallbackQuery):
     admin_id, report_id = callback.data.split("_")[1], callback.data.split("_")[2]
-    report = await Report.update(filter_={"id": report_id}, status=ReportStatus.IN_PROGRESS.value,
-                                 assigned_admin_id=admin_id)
+    await Report.update(filter_={"id": report_id}, status=ReportStatus.IN_PROGRESS.value, assigned_admin_id=admin_id)
+    report = await Report.get(id=report_id)
     buttons: list[InlineKeyboardButton] = [
-        InlineKeyboardButton(text="Qabul qilish", callback_data=f"finish_{admin_id}_{report.id}"),
+        InlineKeyboardButton(text="Yakunlash", callback_data=f"finish_{admin_id}_{report.id}"),
         InlineKeyboardButton(text="Rad Etish", callback_data=f"reject_{admin_id}_{report.id}")
     ]
     markup = inline_button_builder(buttons, (2,))
