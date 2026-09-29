@@ -34,7 +34,7 @@ async def handle_game_username(message: Message, state: FSMContext):
         "game_username": game_username
     }
     await User.check_user(data=user_data)
-    buttons: list[str] = ["🟡 Steam ID", "🟠 Game username", "Reports"]
+    buttons: list[str] = ["🟡 Steam ID", "🟠 Game username", "📃 Reports"]
     markup = reply_button_builder(buttons, (2,))
     await message.answer(text="Qoida buzarni malumotini kiriting", reply_markup=markup)
     await state.clear()
