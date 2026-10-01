@@ -1,3 +1,4 @@
+from time import time
 from typing import Any
 
 from aiogram import Router, F
@@ -5,8 +6,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from bot.buttons.middleware import MediaGroupMiddleware
+from bot.buttons.reply import reply_button_builder
 from bot.states import EvidenceState
-from db.models import Report, Buller
+from db.models import Report, Buller, User
+from utils.time_zone_setting import get_current_uzb_time
 
 router = Router()
 
@@ -37,8 +40,11 @@ async def link_button_handler(message: Message, state: FSMContext):
     await message.answer(text="Demo linki yuboring")
 
 
-async def report_creator(message: Message, data: dict[str, Any], reporter_data: dict[str, Any]):
+async def report_creator(message: Message, data: dict[str, Any], reporter_data: dict[str, Any], state: FSMContext):
     buller_data: dict[str, int | str] = {}
+    buttons = ["⬅️ Back"]
+    last_report_time = time()
+    markup = reply_button_builder(buttons)
     if data.get("steam_id"):
         buller_data['steam_id'] = data["steam_id"]
     elif data.get("game_username"):
@@ -54,18 +60,21 @@ async def report_creator(message: Message, data: dict[str, Any], reporter_data: 
     elif data.get("reason_id"):
         reporter_data['reason_id'] = data["reason_id"]
     await Report.create(**reporter_data)
-    await message.answer(text="Arizangiz qabul qilindi")
+    await User.update({"user_id": reporter_data.get("reporter_id")}, last_report=get_current_uzb_time())
+    await message.answer(text="Arizangiz qabul qilindi", reply_markup=markup)
+    await state.clear()
+    await state.update_data(reporter_id=reporter_data.get("reporter_id"), last_reported_at=last_report_time)
 
 
 @router.message(EvidenceState.photo, F.photo)
-async def photo_handler(message: Message, state: FSMContext, album: list[Message] = None):
+async def photo_handler(message: Message, state: FSMContext, album: list[Message] | None = None):
     if album:
         photo_ids = [msg.photo[-1].file_id for msg in album]
     else:
         photo_ids = [message.photo[-1].file_id]
     data = await state.get_data()
     reporter_data = {'reporter_id': message.chat.id, "evidence": {"photos": photo_ids}}
-    await report_creator(message, data, reporter_data)
+    await report_creator(message, data, reporter_data, state)
 
 
 @router.message(EvidenceState.video, F.video)
@@ -84,7 +93,7 @@ async def audio_handler(message: Message, state: FSMContext):
 
 @router.message(EvidenceState.link)
 async def link_handler(message: Message, state: FSMContext):
-    url: str = message.text
+    url: str | None = message.text
     if not url.startswith("https://"):
         await message.answer(text="Incorrect link")
     data = await state.get_data()

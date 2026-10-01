@@ -6,7 +6,7 @@ class States(StatesGroup):
 
 
 class RegisterState(StatesGroup):
-    gama_username = State()
+    game_username = State()
 
 
 class AcceptState(StatesGroup):
