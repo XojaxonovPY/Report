@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import F, Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -29,7 +31,12 @@ async def buller_handler(message: Message, state: FSMContext):
     buller_address: str = message.text
     buller_data: dict[str, str | int] = {}
     if curren_state == AcceptState.steam_id.state:
-        buller_data["steam_id"] = int(buller_address)
+        try:
+            buller_data["steam_id"] = int(buller_address)
+        except ValueError as e:
+            logging.error(e)
+            await message.answer(text="Steam Id notog'ri kiritilgan")
+            return
     elif curren_state == AcceptState.game_username.state:
         buller_data["game_username"] = buller_address
     await state.update_data(**buller_data)
@@ -49,7 +56,7 @@ async def another_handler(callback: CallbackQuery, state: FSMContext):
 
 
 async def evidence_buttons(message: Message):
-    buttons: list[str] = ["📷 Photo", "📹 Video", "🎙 Audio", "🔗 Link","⬅️ Back"]
+    buttons: list[str] = ["📷 Photo", "📹 Video", "🎙 Audio", "🔗 Link", "⬅️ Back"]
     markup = reply_button_builder(buttons, (2, 2))
     await message.answer(text="Manashulardan birini tanlab dalilngizni yuboring", reply_markup=markup)
 

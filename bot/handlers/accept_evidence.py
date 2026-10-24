@@ -81,14 +81,14 @@ async def photo_handler(message: Message, state: FSMContext, album: list[Message
 async def video_handler(message: Message, state: FSMContext):
     data = await state.get_data()
     reporter_data = {'reporter_id': message.chat.id, "evidence": {"video": message.video.file_id}}
-    await report_creator(message, data, reporter_data)
+    await report_creator(message, data, reporter_data, state)
 
 
 @router.message(EvidenceState.audio, F.audio)
 async def audio_handler(message: Message, state: FSMContext):
     data = await state.get_data()
     reporter_data = {'reporter_id': message.chat.id, "evidence": {"audio": message.audio.file_id}}
-    await report_creator(message, data, reporter_data)
+    await report_creator(message, data, reporter_data, state)
 
 
 @router.message(EvidenceState.link)
@@ -98,4 +98,4 @@ async def link_handler(message: Message, state: FSMContext):
         await message.answer(text="Incorrect link")
     data = await state.get_data()
     reporter_data = {'reporter_id': message.chat.id, "evidence": {"link": url}}
-    await report_creator(message, data, reporter_data)
+    await report_creator(message, data, reporter_data, state)
