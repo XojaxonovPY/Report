@@ -1,0 +1,24 @@
+services:
+  bot:
+    build: .
+    container_name: report_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./sqlite.db:/app/sqlite.db
+    command: python main.py
+
+  admin:
+    build: .
+    container_name: report_admin
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./sqlite.db:/app/sqlite.db
+    command: uvicorn admin.app:app --host 0.0.0.0 --port 8008
+    ports:
+      - "8008:8008"
+    depends_on:
+      - bot
